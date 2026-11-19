@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld("orrery", {
   note: (id: string) => ipcRenderer.invoke("note", id),
   search: (q: string) => ipcRenderer.invoke("search", q),
   write: (id: string, body: string) => ipcRenderer.invoke("write", id, body),
+  create: (id: string, body?: string) => ipcRenderer.invoke("create", id, body),
+  health: () => ipcRenderer.invoke("health"),
   remember: (text: string, opts?: object) => ipcRenderer.invoke("remember", text, opts),
   settings: () => ipcRenderer.invoke("settings"),
   setupClaude: () => ipcRenderer.invoke("setup-claude"),

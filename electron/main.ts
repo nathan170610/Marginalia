@@ -87,6 +87,8 @@ else {
     ipcMain.handle("note", (_e, id: string) => api.note(vault, id));
     ipcMain.handle("search", (_e, q: string) => api.search(vault, q));
     ipcMain.handle("write", (_e, id: string, body: string) => api.write(vault, id, body));
+    ipcMain.handle("create", (_e, id: string, body?: string) => api.create(vault, id, body));
+    ipcMain.handle("health", () => api.health(vault));
     ipcMain.handle("remember", (_e, text: string, opts) => api.remember(vault, text, opts));
     ipcMain.handle("settings", () => {
       const m = mcpRuntime();
