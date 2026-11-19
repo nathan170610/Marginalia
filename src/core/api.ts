@@ -40,5 +40,5 @@ export function linkNotes(root: string, a: string, b: string, reason = "") {
 export const api = {
   graph: graphPayload, note: readNote, write: writeNote, remember, link: linkNotes,
   search: (root: string, q: string, limit?: number) => search(loadVault(root), q, limit),
-  brief: (root: string, budget?: number) => buildBrief(loadVault(root), { budget }),
+  brief: (root: string, budget?: number, topic?: string) => buildBrief(loadVault(root), { budget, topic }),
 };

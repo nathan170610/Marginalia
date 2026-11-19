@@ -93,7 +93,7 @@ describe("MCP server (built dist/mcp.cjs)", () => {
     const c = new Client({ name: "test", version: "1" });
     await c.connect(new StdioClientTransport({ command: "node", args: [mcp], env: { ...process.env, ORRERY_VAULT: root } as Record<string, string> }));
     const names = (await c.listTools()).tools.map(t => t.name).sort();
-    expect(names).toEqual(["edit_note", "explore", "get_brief", "link_notes", "read_note", "recall", "remember", "search", "update_note"]);
+    expect(names).toEqual(["edit_note", "explore", "get_brief", "link_notes", "read_note", "recall", "remember", "review_memory", "search", "update_note"]);
     expect(c.getInstructions()).toMatch(/get_brief once/);
     const brief = (await c.callTool({ name: "get_brief", arguments: { budget: 600 } })) as any;
     expect(estimateTokens(brief.content[0].text)).toBeLessThanOrEqual(640);

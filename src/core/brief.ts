@@ -1,9 +1,10 @@
 import type { Graph, Note } from "./types";
+import { search } from "./search";
 
 /** Rough token estimate (~4 chars/token). Good enough for budgeting. */
 export const estimateTokens = (s: string) => Math.ceil(s.length / 4);
 
-export interface BriefOptions { budget?: number; recent?: number }
+export interface BriefOptions { budget?: number; recent?: number; topic?: string }
 
 /**
  * The brief is what an AI reads at the start of every conversation.
@@ -33,7 +34,16 @@ export function buildBrief(g: Graph, opts: BriefOptions = {}): string {
       push(`### ${n.title} [[${n.id}]]\n${text.length > cap ? text.slice(0, cap).trimEnd() + " …(truncated, read_note for rest)" : text}`);
     }
   }
-  const planets = by("planet");
+  // topic: surface the most relevant notes first and re-rank planets, all inside the same budget
+  const rel = new Map<string, number>();
+  if (opts.topic) {
+    const hits = search(g, opts.topic, 12); hits.forEach((h, i) => rel.set(h.id, hits.length - i));
+    if (hits.length) {
+      push(`\n## Relevant to "${opts.topic}"`);
+      for (const h of hits.slice(0, 5)) if (!push(`- ${h.title} (${h.id}) — ${h.snippet}`)) break;
+    }
+  }
+  const planets = by("planet").sort((a, b) => (rel.get(b.id) || 0) - (rel.get(a.id) || 0));
   if (planets.length) {
     push("\n## Planets");
     for (const n of planets) {

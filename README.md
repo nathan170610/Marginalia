@@ -57,6 +57,16 @@ Tools, cheapest first:
 
 The server also tells Claude how to use them sparingly. A typical lookup costs about half the tokens of search plus read.
 
+### Bring in your Obsidian vault
+Either open it directly (desktop app → first run → **Open existing folder**), or copy it into your Orrery vault:
+```bash
+node dist/cli.cjs import-obsidian ~/path/to/ObsidianVault --dry-run   # preview
+node dist/cli.cjs import-obsidian ~/path/to/ObsidianVault             # copies notes and attachments; never overwrites
+```
+
+### Keep memory tidy
+`orrery review` lists contradictions (e.g. two different cities you "live in") and Inbox items ready to file. `orrery consolidate --yes` files them. Claude can do the same with `review_memory`; it asks you which fact is current instead of guessing.
+
 ### Import your past Claude conversations
 Export your data from Claude (Settings → Privacy → Export data), then:
 ```bash
@@ -81,7 +91,7 @@ Without `orbit:`, folders decide (`Core/` → core; `Values/ Projects/ People/ G
 - **Capture:** the capture box adds to today's Inbox.
 
 ## Status & roadmap
-Phases 0-4 are working (desktop installers for Linux verified; Windows/macOS built by CI) (2,000 notes run at ≥50 fps) (see [docs/BUILD_PROMPT.md](docs/BUILD_PROMPT.md) for the phased plan and ready-to-paste prompts). Not yet done: LLM-quality fact distillation (import is rule-based), packaged-installer testing, embeddings.
+Phases 0-5 are working; see SECURITY.md, CONTRIBUTING.md, CHANGELOG.md (desktop installers for Linux verified; Windows/macOS built by CI) (2,000 notes run at ≥50 fps) (see [docs/BUILD_PROMPT.md](docs/BUILD_PROMPT.md) for the phased plan and ready-to-paste prompts). Not yet done: LLM-quality fact distillation (import is rule-based), packaged-installer testing, embeddings.
 
 > This repo was previously a placeholder for an Android reading app ("Marginalia"); it now hosts Orrery.
 

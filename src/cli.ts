@@ -6,6 +6,9 @@ import { estimateTokens } from "./core/brief";
 import { serve } from "./server";
 import { ingestClaude } from "./core/ingest";
 import { claudeDesktopConfigPath, setupClaude } from "./core/setup";
+import { importObsidian } from "./core/obsidian";
+import { reviewText, planFiling, applyFiling } from "./core/consolidate";
+import { loadVault } from "./core/vault";
 
 const args = process.argv.slice(2);
 const flag = (n: string) => { const i = args.indexOf("--" + n); if (i < 0) return undefined; const v = args[i + 1]; args.splice(i, 2); return v; };
@@ -26,6 +29,10 @@ const help = `orrery — a living solar system of your mind
   orrery add <text>           capture a memory into today's Inbox note
   orrery mcp-config           print the Claude MCP config snippet
   orrery setup-claude [--yes] add Orrery to Claude Desktop's config (shows the change; --yes writes it, with a backup)
+  orrery import-obsidian <dir> [--dry-run]  copy an Obsidian vault in (never overwrites)
+  orrery review                 contradictions to confirm + Inbox items ready to file
+  orrery consolidate [--yes]    file linked Inbox bullets into their notes' Log
+  orrery brief [topic]          the brief, optionally focused on a topic
   orrery import-claude <export.zip|conversations.json|dir> [--dry-run] [--all]
                               import a Claude data export as Conversation notes with durable facts
 
@@ -33,7 +40,7 @@ const help = `orrery — a living solar system of your mind
 
 switch (cmd) {
   case "init": console.log(`created ${initVault(vault, findTemplate())} files in ${vault}`); break;
-  case "brief": { const b = api.brief(vault, budget ? Number(budget) : undefined); console.log(b); console.error(`\n[~${estimateTokens(b)} tokens]`); break; }
+  case "brief": { const b = api.brief(vault, budget ? Number(budget) : undefined, rest || undefined); console.log(b); console.error(`\n[~${estimateTokens(b)} tokens]`); break; }
   case "search": for (const h of api.search(vault, rest)) console.log(`${h.score.toFixed(2)}  [${h.orbit}] ${h.id}\n      ${h.snippet}`); break;
   case "add": { const r = api.remember(vault, rest); console.log("saved to", r.id); break; }
   case "serve": {
@@ -57,6 +64,21 @@ switch (cmd) {
     const r = ingestClaude(vault, path.resolve(rest), { dryRun, all });
     for (const p of r.created) console.log(`${dryRun ? "would create" : "created"} ${p.id}  (${p.facts.length} facts${p.links.length ? ", links: " + p.links.join(", ") : ""})${dryRun && p.facts.length ? "\n    - " + p.facts.join("\n    - ") : ""}`);
     console.log(`\n${r.created.length} notes ${dryRun ? "proposed" : "written"}, ${r.skipped} conversations skipped (already imported or no durable facts), ${r.duplicateFacts} duplicate facts dropped.`);
+    break;
+  }
+  case "import-obsidian": {
+    if (!rest) { console.log("usage: orrery import-obsidian <obsidian-vault-folder> [--dry-run]"); break; }
+    const r = importObsidian(path.resolve(rest), vault, { dryRun });
+    console.log(`${dryRun ? "would copy" : "copied"} ${r.notes} notes and ${r.attachments} attachments into ${vault} (${r.unchanged} already identical)`);
+    if (r.renamed.length) console.log(`kept both versions for ${r.renamed.length} notes that differ:\n  ` + r.renamed.slice(0, 20).join("\n  "));
+    break;
+  }
+  case "review": console.log(reviewText(loadVault(vault))); break;
+  case "consolidate": {
+    const plan = planFiling(loadVault(vault));
+    if (!plan.length) { console.log("Nothing to file."); break; }
+    for (const p of plan) console.log(`${p.from} → ${p.to}: ${p.line.trim()}`);
+    if (yes) console.log(`\nFiled ${applyFiling(vault, plan)} items into their notes' "## Log" sections.`); else console.log(`\nRe-run with --yes to file these ${plan.length} items.`);
     break;
   }
   default: console.log(help);

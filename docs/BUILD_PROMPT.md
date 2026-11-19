@@ -60,9 +60,17 @@ Status legend: ✅ built in this repo · 🟡 partly built · ⬜ not started
 - **Server instructions:** the MCP server tells Claude how to work cheaply (brief once, recall before read, batch remembers).
 - **Measured on the starter vault:** search 202→118 tokens, and search + 2 reads (327) became one recall (158).
 
-## Phase 5: Smarter, cheaper memory ⬜
+## Phase 5: Smarter, cheaper memory ✅ core (a,c,d,f) · ⬜ (b) API summaries, (e) embeddings (2026-11-19)
 **Prompt:** Reduce tokens and improve recall: (a) cache parsed index in `.orrery/index.json` keyed by mtime so big vaults load instantly; (b) per-note auto-summaries stored in frontmatter (`summary:`) when missing, generated only on request via an optional `orrery summarize` that uses the user's own API key; (c) *consolidation:* merge Inbox bullets into the right notes, flag contradictions ("lives in X" vs "lives in Y") for the user rather than silently overwriting; (d) *decay & promotion:* notes referenced often rise toward the core, stale ones drift outward; (e) optional local embeddings (e.g. transformers.js) for hybrid BM25+vector search behind a flag; (f) brief personalisation: `get_brief({topic})` re-ranks planets by relevance to the topic while staying within budget.
 **Done when:** benchmark script reports brief tokens and retrieval hit-rate on a fixture vault before/after; brief stays ≤ budget for 10k notes; contradiction detection has tests.
+**Result:**
+- **(a) Parse cache:** in memory for the app and MCP server, plus `.orrery/index.json` keyed by mtime and size. A 10k-note vault produces its brief in about 0.3 s from the CLI.
+- **(c) Consolidation:** `orrery consolidate [--yes]` files Inbox bullets that link to exactly one note into that note's `## Log`. Contradictions such as "lives in", "works at", age, best friend or partner are flagged, never auto-resolved. Available as `orrery review` and the `review_memory` MCP tool.
+- **(d) Promotion and decay:** `.orrery/usage.json` counts recall, read and explore hits. Used notes rise an orbit; notes untouched for 180 days sink one.
+- **(f) Topic brief:** `get_brief(topic=…)` adds a "Relevant to" section and re-ranks planets within the same budget.
+- **Obsidian import:** `orrery import-obsidian <dir>` copies notes and attachments, skips `.obsidian/`, and never overwrites (a differing note becomes `X (obsidian).md`).
+- **Tests:** the brief stays within budget for a 10k-note vault at 600, 1,800 and 4,000 tokens; contradiction tests included.
+- **Not done:** (b) needs an API key and (e) needs a model download. Deferred: plain-text search (BM25) plus `recall` covers retrieval for now.
 
 ## Phase 6: Open-source release ⬜
 **Prompt:** Prepare v1.0: README with GIF/screenshots, CONTRIBUTING, issue templates, SECURITY.md (threat model: local files, localhost server, MCP prompt-injection from note contents, so document that note text is untrusted input to the AI), semantic versioning + CHANGELOG, plugin hooks for importers (ChatGPT export, Notion, Obsidian daily notes), docs site (static), and a demo vault. Run a security review (path traversal, XSS in note rendering, IPC surface).

@@ -3,31 +3,33 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { api } from "./core/api";
 import { resolveVault } from "./core/config";
-import { loadVault } from "./core/vault";
+import { loadVault, touchUsage } from "./core/vault";
+import { reviewText } from "./core/consolidate";
 import { fmtHits, fmtNote, recall, explore, editNote, rememberMany } from "./core/memory";
 
 const vault = resolveVault();
 
 /** Sent to Claude once when it connects: the cheapest way to use this memory. */
 const INSTRUCTIONS = `Orrery is the user's long-term memory: a vault of markdown notes. Use it to keep context outside the conversation, and spend as few tokens as you can.
-1. At the start of a conversation, call get_brief once. Don't call it again in the same conversation.
+1. At the start of a conversation, call get_brief once, with topic= set to what the user is asking about. Don't call it again in the same conversation.
 2. To find something, use recall: one call returns the matching lines and connected notes. Use read_note only when you need a whole note, and prefer its section= option.
 3. To connect the dots, use explore on a note. It lists its neighbours and notes that look related but aren't linked yet. When a relationship is real, link it with link_notes.
 4. When the user shares something durable (a decision, preference, goal, person, or status change), save it with remember. Batch several facts into one call, one short sentence each, with [[links]]. Never save transcripts.
-5. To change a note, use edit_note (append, or replace one exact passage) instead of rewriting it with update_note.`;
+5. If two facts contradict each other, ask the user which one is current. Don't pick one yourself. review_memory lists them.
+6. To change a note, use edit_note (append, or replace one exact passage) instead of rewriting it with update_note.`;
 
-const server = new McpServer({ name: "orrery", version: "0.2.0" }, { instructions: INSTRUCTIONS });
+const server = new McpServer({ name: "orrery", version: "0.3.0" }, { instructions: INSTRUCTIONS });
 const text = (t: string) => ({ content: [{ type: "text" as const, text: t }] });
 
 server.tool("get_brief",
   "Call ONCE at the start of a conversation. Compact, token-budgeted summary of the user: identity, values, projects, people, recent changes.",
-  { budget: z.number().int().min(300).max(8000).optional().describe("max tokens, default 1800") },
-  async ({ budget }) => text(api.brief(vault, budget)));
+  { budget: z.number().int().min(300).max(8000).optional().describe("max tokens, default 1800"), topic: z.string().optional().describe("what this conversation is about; puts the most relevant notes first") },
+  async ({ budget, topic }) => text(api.brief(vault, budget, topic)));
 
 server.tool("recall",
   "Best first move for any question about the user. Returns the matching lines from the most relevant notes and their connected notes, within a token budget, in one call.",
   { query: z.string(), budget: z.number().int().min(150).max(3000).optional().describe("max tokens, default 700") },
-  async ({ query, budget }) => text(recall(loadVault(vault), query, budget)));
+  async ({ query, budget }) => { const g = loadVault(vault); const out = recall(g, query, budget); touchUsage(vault, [...out.matchAll(/^## .*?\[([^\]]+)\]/gm)].map(m => m[1])); return text(out); });
 
 server.tool("search", "Ranked list of matching note ids with one-line snippets (cheapest lookup).",
   { query: z.string(), limit: z.number().int().min(1).max(20).optional() },
@@ -35,11 +37,14 @@ server.tool("search", "Ranked list of matching note ids with one-line snippets (
 
 server.tool("read_note", "Read a note as compact text with its links and backlinks. Pass section= to read one heading only.",
   { id: z.string().describe("note id, e.g. Projects/Orrery"), section: z.string().optional().describe("heading text to read only that part"), max_chars: z.number().int().min(200).max(40000).optional() },
-  async ({ id, section, max_chars }) => text(fmtNote(loadVault(vault), id, { section, maxChars: max_chars })));
+  async ({ id, section, max_chars }) => { const out = fmtNote(loadVault(vault), id, { section, maxChars: max_chars }); touchUsage(vault, [id]); return text(out); });
 
 server.tool("explore", "Connect the dots around a note: its neighbours as one-liners, plus notes that share neighbours with it but aren't linked yet.",
   { id: z.string(), budget: z.number().int().min(150).max(3000).optional() },
-  async ({ id, budget }) => text(explore(loadVault(vault), id, budget)));
+  async ({ id, budget }) => { const out = explore(loadVault(vault), id, budget); touchUsage(vault, [id]); return text(out); });
+
+server.tool("review_memory", "Housekeeping, about once a week or when asked: lists contradictory facts to confirm with the user, and Inbox items ready to file into their notes.",
+  {}, async () => text(reviewText(loadVault(vault))));
 
 server.tool("remember",
   "Save durable facts the user shared (decisions, preferences, goals, people, status). Batch them: one call, one short sentence per fact, with [[wikilinks]] to related notes. Duplicates are skipped automatically.",
