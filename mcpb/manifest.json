@@ -1,0 +1,42 @@
+{
+  "manifest_version": "0.2",
+  "name": "orrery",
+  "display_name": "Orrery",
+  "version": "0.3.0",
+  "description": "Long-term memory for Claude from a local markdown vault.",
+  "long_description": "Orrery keeps your memory as plain markdown notes (Obsidian-compatible). Claude reads a small brief, recalls facts on demand and saves new ones, all within a token budget. Nothing leaves your computer.",
+  "author": { "name": "Orrery" },
+  "repository": { "type": "git", "url": "https://github.com/nathan170610/Marginalia" },
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server/mcp.cjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/mcp.cjs"],
+      "env": { "ORRERY_VAULT": "${user_config.vault}" }
+    }
+  },
+  "tools": [
+    { "name": "get_brief", "description": "Compact memory brief; call once per chat" },
+    { "name": "recall", "description": "One-call answer from memory within a token budget" },
+    { "name": "search", "description": "Ranked search over the vault" },
+    { "name": "read_note", "description": "Read one note" },
+    { "name": "explore", "description": "Connect related notes and suggest missing links" },
+    { "name": "review_memory", "description": "List contradicting facts to resolve" },
+    { "name": "remember", "description": "Save new facts (batched, skips duplicates)" },
+    { "name": "edit_note", "description": "Append to or replace part of a note" },
+    { "name": "update_note", "description": "Rewrite a note body, keeping frontmatter" },
+    { "name": "link_notes", "description": "Add a wikilink between two notes" }
+  ],
+  "user_config": {
+    "vault": {
+      "type": "directory",
+      "title": "Vault folder",
+      "description": "The Orrery (or Obsidian) folder Claude uses as memory.",
+      "required": true
+    }
+  },
+  "compatibility": { "platforms": ["win32", "darwin", "linux"], "runtimes": { "node": ">=18.0.0" } },
+  "license": "MIT"
+}
