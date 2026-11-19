@@ -1,11 +1,13 @@
 {
   "name": "orrery",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A living solar system of your mind: an Obsidian-compatible markdown vault with a beautiful orbit view and a token-efficient memory bridge for Claude (MCP).",
   "license": "MIT",
   "private": true,
   "main": "dist/electron/main.cjs",
-  "bin": { "orrery": "dist/cli.cjs" },
+  "bin": {
+    "orrery": "dist/cli.cjs"
+  },
   "scripts": {
     "build:node": "node scripts/build-node.mjs",
     "build:ui": "vite build",
@@ -19,6 +21,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
+    "electron-updater": "^6.8.11",
     "zod": "^3.25.0"
   },
   "devDependencies": {
@@ -33,9 +36,51 @@
   "build": {
     "appId": "dev.orrery.app",
     "productName": "Orrery",
-    "files": ["dist/**/*", "template/**/*", "package.json"],
-    "win": { "target": "nsis" },
-    "mac": { "target": "dmg", "category": "public.app-category.productivity" },
-    "linux": { "target": ["AppImage", "deb"], "category": "Utility" }
-  }
+    "icon": "assets/icon.png",
+    "files": [
+      "dist/**/*",
+      "template/**/*",
+      "assets/icon.png",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "dist/mcp.cjs"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "nathan170610",
+        "repo": "Marginalia"
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "maintainer": "Orrery",
+      "synopsis": "Your mind as a solar system; memory for Claude"
+    },
+    "directories": {
+      "output": "release"
+    }
+  },
+  "author": {
+    "name": "Orrery contributors",
+    "email": "orrery@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/nathan170610/Marginalia",
+  "desktopName": "orrery.desktop"
 }

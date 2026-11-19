@@ -497,5 +497,24 @@ async function refresh(first = false) {
   try { const d = await backend.graph(); const s = d.nodes.map(n => n.id + n.mtime).join("|") + d.edges.length; if (s === sig) return; sig = s; layout(d, first); } catch (e) { console.error(e); }
 }
 refresh(true).then(() => requestAnimationFrame(frame));
-setInterval(() => refresh(), 4000);
+// desktop app: the main process watches the vault and pushes changes; polling stays as a slow safety net
+if (backend.onChange) { backend.onChange(() => refresh()); setInterval(() => refresh(), 15000); } else setInterval(() => refresh(), 4000);
+backend.onFocusCapture?.(() => $("cap").focus());
+
+// ---------- settings ----------
+const desktop = !!backend.setupClaude; document.documentElement.classList.toggle("desktop", desktop);
+async function openSettings() {
+  const s = await backend.settings(); $("settings").hidden = false;
+  $("svault").textContent = s.vault; $("ssnippet").textContent = s.snippet; $("scfg").textContent = $("scfg2").textContent = s.claudeConfig;
+  $("shot").textContent = s.hotkey ? `Quick capture from anywhere: ${s.hotkey.replace("CommandOrControl", navigator.platform.startsWith("Mac") ? "Cmd" : "Ctrl")}` : "";
+}
+$("gear").onclick = () => $("settings").hidden ? openSettings() : ($("settings").hidden = true);
+$("sclose").onclick = () => { $("settings").hidden = true; };
+$("scopy").onclick = async () => { try { await navigator.clipboard.writeText($("ssnippet").textContent || ""); $("scopy").textContent = "Copied"; } catch { $("scopy").textContent = "Select and copy manually"; } };
+$("sclaude").onclick = async () => {
+  try { const r = await backend.setupClaude!(); $("sclaudest").textContent = r.changed ? "Done. Restart Claude Desktop." + (r.backup ? " (old config backed up)" : "") : "Already connected."; }
+  catch (e) { $("sclaudest").textContent = "Failed: " + (e as Error).message; }
+};
+$("schange").onclick = async () => { const v = await backend.changeVault!(); if (v) { sig = ""; await refresh(true); openSettings(); } };
+$("sopen").onclick = () => backend.openVault!();
 (window as any).__orrery = { get bodies() { return bodies; }, get fps() { return fps; }, get reduced() { return reduced; }, get theme() { return themeKey; } };

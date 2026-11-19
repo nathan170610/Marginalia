@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <title>Orrery</title>
 <link rel="stylesheet" href="./style.css" />
 </head>
@@ -17,6 +18,7 @@
   <button id="theme" title="Theme (T)">◐ <span id="themeName">deep space</span></button>
   <button id="motion" title="Reduced motion (M)" aria-pressed="false">motion: on</button>
   <button id="help" title="Keyboard shortcuts (?)">?</button>
+  <button id="gear" title="Settings">⚙</button>
 </div>
 <div id="legend">
   <i data-tier="core"></i>core <i data-tier="planet"></i>planet <i data-tier="moon"></i>moon <i data-tier="asteroid"></i>asteroid
@@ -39,6 +41,20 @@
     <div id="eactions"><button id="save">Save  <small>Ctrl+S</small></button><button id="cancel">Cancel</button><span id="estatus"></span></div>
   </div>
   <div id="plinks"></div>
+</aside>
+<aside id="settings" hidden>
+  <button class="x" id="sclose" aria-label="close">×</button>
+  <h3>Settings</h3>
+  <h4>Vault</h4>
+  <div id="svault" class="mono"></div>
+  <div class="row desk"><button id="schange">Change vault…</button><button id="sopen">Open folder</button></div>
+  <h4>Connect Claude Desktop</h4>
+  <p class="dim">Gives Claude the memory tools (brief, recall, explore, remember…). It reads only what it needs, so it stays cheap on tokens.</p>
+  <div class="row desk"><button id="sclaude">Connect automatically</button><span id="sclaudest" class="dim"></span></div>
+  <p class="dim web">From a terminal: <code>orrery setup-claude --yes</code>, or paste this into <span id="scfg" class="mono"></span>:</p>
+  <p class="dim desk">Or paste this into <span id="scfg2" class="mono"></span>:</p>
+  <pre id="ssnippet"></pre><button id="scopy">Copy</button>
+  <p class="dim desk" id="shot"></p>
 </aside>
 <div id="keys" hidden>
   <b>Keys</b>

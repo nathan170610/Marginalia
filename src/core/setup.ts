@@ -9,11 +9,16 @@ export function claudeDesktopConfigPath(platform = process.platform, home = os.h
 }
 
 /** Merge the orrery MCP server into Claude Desktop's config. Never touches other servers; backs up the old file. */
-export function setupClaude(file: string, mcpPath: string, vault: string, write: boolean) {
+export interface Runtime { command: string; env?: Record<string, string> }
+/** In the packaged desktop app there may be no Node install, so the app's own binary runs the server (ELECTRON_RUN_AS_NODE). */
+export function mcpEntry(mcpPath: string, vault: string, rt: Runtime = { command: "node" }) {
+  return { command: rt.command, args: [mcpPath], env: { ...(rt.env || {}), ORRERY_VAULT: vault } };
+}
+export function setupClaude(file: string, mcpPath: string, vault: string, write: boolean, rt?: Runtime) {
   let cfg: any = {};
   const exists = fs.existsSync(file);
   if (exists) { const raw = fs.readFileSync(file, "utf8").trim(); cfg = raw ? JSON.parse(raw) : {}; }
-  const entry = { command: "node", args: [mcpPath], env: { ORRERY_VAULT: vault } };
+  const entry = mcpEntry(mcpPath, vault, rt);
   const before = cfg.mcpServers?.orrery;
   const changed = JSON.stringify(before) !== JSON.stringify(entry);
   const next = { ...cfg, mcpServers: { ...(cfg.mcpServers || {}), orrery: entry } };

@@ -27,7 +27,14 @@ button:focus-visible, canvas:focus-visible { outline:2px solid var(--accent); ou
 #minimap { position:fixed; right:16px; bottom:16px; width:180px; height:130px; border-radius:12px; border:1px solid var(--line); background:var(--glass); backdrop-filter:blur(14px); cursor:crosshair; }
 #capture { position:fixed; left:16px; bottom:16px; width:min(520px,calc(100vw - 230px)); }
 #panel { position:fixed; top:60px; right:16px; bottom:16px; width:min(440px,calc(100vw - 32px)); padding:22px; border-radius:18px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(18px); overflow:auto; box-shadow:0 0 60px color-mix(in srgb,var(--accent) 14%,transparent); z-index:3; }
-#panel[hidden], #editor[hidden], #ac[hidden], #keys[hidden] { display:none; }
+#settings { position:fixed; top:60px; right:16px; width:min(460px,calc(100vw - 32px)); max-height:calc(100vh - 80px); overflow:auto; padding:20px 22px; border-radius:18px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(18px); z-index:5; }
+#settings h3 { margin:0 0 6px; } #settings h4 { margin:16px 0 6px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); }
+#settings .x { position:absolute; top:10px; right:14px; background:none; border:0; color:var(--dim); font-size:22px; backdrop-filter:none; }
+#settings .row { display:flex; gap:6px; align-items:center; margin:6px 0; } .dim { color:var(--dim); font-size:12px; }
+.mono, pre, code { font:12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; word-break:break-all; }
+#settings pre { white-space:pre-wrap; padding:10px 12px; border-radius:10px; background:color-mix(in srgb,var(--bg) 70%,transparent); border:1px solid var(--line); }
+html:not(.desktop) .desk, html.desktop .web { display:none; }
+#settings[hidden], #panel[hidden], #editor[hidden], #ac[hidden], #keys[hidden] { display:none; }
 #close { position:absolute; top:10px; right:14px; background:none; border:0; color:var(--dim); font-size:24px; backdrop-filter:none; }
 #ptitle { font-size:22px; font-weight:650; margin-right:24px; }
 #pmeta { color:var(--dim); font-size:12px; margin:2px 0 8px; }

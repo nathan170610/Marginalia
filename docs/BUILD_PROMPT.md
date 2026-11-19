@@ -45,9 +45,20 @@ Status legend: ✅ built in this repo · 🟡 partly built · ⬜ not started
 - Reduced motion follows the OS setting and can be toggled with `M`; checked that bodies don't move with it on.
 - The editor writes through `/api/write`, which refuses cross-site POSTs. Screenshots: `docs/overview.png`, `docs/paper.png`, `docs/2000-notes.png`, `docs/editor.png`.
 
-## Phase 4: Desktop app & installers 🟡 (Electron shell launch ✅ verified under Xvfb; installers/packaging ⬜ untested)
+## Phase 4: Desktop app & installers ✅ Linux verified · Windows/macOS built by CI, untested (2026-11-19)
 **Prompt:** Make the Electron app production quality: first-run vault picker (default `~/Orrery`, or point at an existing Obsidian vault), file watcher (chokidar) pushing live updates over IPC instead of 4s polling, tray icon + global hotkey for quick capture, single-instance lock, app icon set, electron-builder configs for NSIS/dmg/AppImage/deb, code-signing hooks (documented, optional), auto-update via GitHub Releases, CSP on the renderer, and a Settings panel that shows the exact MCP config to copy.
 **Done when:** CI builds installers on all three OS, a fresh install launches, creates/opens a vault, shows the graph, and the MCP snippet from Settings works in Claude Desktop (manual checklist in `docs/RELEASE_CHECKLIST.md`).
+**Result:**
+- **Shipped:** first-run vault picker, a `fs.watch` watcher that pushes changes over IPC (polling every 15 s as a fallback), tray icon, `Ctrl/Cmd+Shift+O` quick capture, single-instance lock, icon (`assets/`), CSP with navigation blocked, Settings panel (vault path, one-click Claude Desktop setup, copyable snippet) and electron-updater on GitHub Releases. Code signing is documented and optional.
+- **Verified on Linux:** AppImage (131 MB) and .deb (105 MB) build. The packaged app launches under Xvfb, and the watcher reflects an outside edit in about 250 ms.
+- **The packaged MCP server needs no Node install:** Claude Desktop runs the app binary with `ELECTRON_RUN_AS_NODE=1`, using a copy of `mcp.cjs` in userData (AppImage mount paths change on every launch). Tested end to end with an MCP client.
+- **Not tested:** Windows and macOS installers (built by CI on a `v*` tag), and the interactive first-run dialog.
+
+### Token efficiency pass (done alongside Phase 4)
+- **New tools:** `recall`, a one-call answer within a budget (matching lines plus neighbours); `explore`, which connects the dots (neighbours plus "possibly related" notes that share neighbours but aren't linked); `edit_note`, which appends or replaces an exact passage without resending the note; batched `remember` that skips duplicates.
+- **Leaner output:** plain-text results instead of pretty JSON, and `read_note section=` reads one heading.
+- **Server instructions:** the MCP server tells Claude how to work cheaply (brief once, recall before read, batch remembers).
+- **Measured on the starter vault:** search 202→118 tokens, and search + 2 reads (327) became one recall (158).
 
 ## Phase 5: Smarter, cheaper memory ⬜
 **Prompt:** Reduce tokens and improve recall: (a) cache parsed index in `.orrery/index.json` keyed by mtime so big vaults load instantly; (b) per-note auto-summaries stored in frontmatter (`summary:`) when missing, generated only on request via an optional `orrery summarize` that uses the user's own API key; (c) *consolidation:* merge Inbox bullets into the right notes, flag contradictions ("lives in X" vs "lives in Y") for the user rather than silently overwriting; (d) *decay & promotion:* notes referenced often rise toward the core, stale ones drift outward; (e) optional local embeddings (e.g. transformers.js) for hybrid BM25+vector search behind a flag; (f) brief personalisation: `get_brief({topic})` re-ranks planets by relevance to the topic while staying within budget.

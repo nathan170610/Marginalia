@@ -37,11 +37,25 @@ Desktop app: `npm run app` (launch verified under Xvfb: first-run vault creation
 Use another vault (even an existing Obsidian vault): `ORRERY_VAULT=/path/to/vault` or `--vault`.
 
 ## Connect Claude (MCP)
+**Desktop app:** ⚙ Settings → **Connect automatically**, then restart Claude Desktop. No Node install is needed.
+
+**From source:**
 ```bash
 node dist/cli.cjs mcp-config        # prints the JSON snippet
 ```
 Or let Orrery do it: `node dist/cli.cjs setup-claude` shows the change, `--yes` writes it into Claude Desktop's config (other servers kept, old file backed up). For Claude Code: `claude mcp add orrery -- node /abs/path/dist/mcp.cjs` with `ORRERY_VAULT` set.
-Tools: `get_brief`, `search`, `read_note`, `remember`, `update_note`, `link_notes`.
+Tools, cheapest first:
+- `get_brief`: once per conversation.
+- `recall`: one-call answer within a token budget.
+- `search`
+- `read_note`: can read just one `section=`.
+- `explore`: neighbours, plus unlinked notes that share neighbours, so Claude can connect the dots.
+- `remember`: batched, skips duplicates.
+- `edit_note`: append, or replace one passage.
+- `link_notes`
+- `update_note`
+
+The server also tells Claude how to use them sparingly. A typical lookup costs about half the tokens of search plus read.
 
 ### Import your past Claude conversations
 Export your data from Claude (Settings → Privacy → Export data), then:
@@ -67,7 +81,7 @@ Without `orbit:`, folders decide (`Core/` → core; `Values/ Projects/ People/ G
 - **Capture:** the capture box adds to today's Inbox.
 
 ## Status & roadmap
-Phases 0-3 are working (2,000 notes run at ≥50 fps) (see [docs/BUILD_PROMPT.md](docs/BUILD_PROMPT.md) for the phased plan and ready-to-paste prompts). Not yet done: LLM-quality fact distillation (import is rule-based), packaged-installer testing, embeddings.
+Phases 0-4 are working (desktop installers for Linux verified; Windows/macOS built by CI) (2,000 notes run at ≥50 fps) (see [docs/BUILD_PROMPT.md](docs/BUILD_PROMPT.md) for the phased plan and ready-to-paste prompts). Not yet done: LLM-quality fact distillation (import is rule-based), packaged-installer testing, embeddings.
 
 > This repo was previously a placeholder for an Android reading app ("Marginalia"); it now hosts Orrery.
 
