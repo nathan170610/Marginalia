@@ -50,7 +50,8 @@
       {
         "provider": "github",
         "owner": "nathan170610",
-        "repo": "Marginalia"
+        "repo": "Marginalia",
+        "releaseType": "release"
       }
     ],
     "win": {
