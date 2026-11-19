@@ -35,7 +35,9 @@ export function timeline(nodes: N[]): { pos: P; lanes: string[]; t0: number; t1:
   const ts = nodes.map(v => v.mtime).filter(Boolean); const t0 = Math.min(...ts, Date.now()), t1 = Math.max(...ts, t0 + 864e5);
   const lanes = [...new Set(nodes.map(v => v.folder || "(root)"))].sort();
   const pos: P = new Map();
-  for (const v of nodes) { const li = lanes.indexOf(v.folder || "(root)"); pos.set(v.id, [-620 + 1240 * (v.mtime - t0) / (t1 - t0), (li - (lanes.length - 1) / 2) * 56 + (h(v.id) - 0.5) * 22]); }
+  // half date, half rank: notes edited on the same day still spread out instead of piling up
+  const rank = new Map([...nodes].sort((a, b) => a.mtime - b.mtime).map((v, i) => [v.id, i / Math.max(1, nodes.length - 1)]));
+  for (const v of nodes) { const li = lanes.indexOf(v.folder || "(root)"); pos.set(v.id, [-620 + 1240 * (0.5 * (v.mtime - t0) / (t1 - t0) + 0.5 * rank.get(v.id)!), (li - (lanes.length - 1) / 2) * 56 + (h(v.id) - 0.5) * 22]); }
   return { pos, lanes, t0, t1 };
 }
 export const laneY = (i: number, n: number) => (i - (n - 1) / 2) * 56;

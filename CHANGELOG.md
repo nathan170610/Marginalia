@@ -1,6 +1,13 @@
 # Changelog
 Semantic versioning. Dates are YYYY-MM-DD.
 
+## 0.4.0 — 2026-11-19
+- Look: procedural sun-lit planet textures, rings on hub notes, nebula noise, new themes `solar` and `midnight ink`, theme cross-fade.
+- 3D: right/Shift-drag tilt and spin, double-click reset, depth of field (D), fly-to camera, follow mode (F).
+- Views (V): orbit, constellation, timeline, list.
+- Reader: text size, serif, panel width (W), focus dimming, table of contents, reading time, link hover previews, richer markdown.
+- Ctrl+K command palette, new note (N), pins, random note (R), tour (P), zen (Z), PNG export, back/forward, tier and last-7-days filters, memory health in Settings.
+
 ## 0.3.0 — 2026-11-19
 - Memory hygiene: `review_memory` / `orrery review` flag contradictions; `orrery consolidate` files Inbox items into notes.
 - Topic-focused brief (`get_brief topic=`); notes rise or sink by usage; parse cache for big vaults.
