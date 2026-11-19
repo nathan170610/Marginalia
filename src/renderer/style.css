@@ -55,4 +55,56 @@ html:not(.desktop) .desk, html.desktop .web { display:none; }
 #plinks h4 { margin:10px 0 4px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; font-size:11px; }
 #keys { position:fixed; top:60px; right:16px; padding:14px 18px; border-radius:14px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(18px); font-size:12px; line-height:2; z-index:4; }
 kbd { font:11px ui-monospace,monospace; padding:1px 5px; border:1px solid var(--line); border-radius:5px; }
+/* views switcher */
+#views { position:fixed; top:16px; left:50%; transform:translateX(-50%); display:flex; gap:2px; padding:3px; border-radius:12px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(14px); z-index:2; }
+#views button { border:0; background:none; backdrop-filter:none; padding:5px 10px; color:var(--dim); }
+#views button span { margin-left:6px; font-size:11px; }
+#views button[aria-pressed="true"] { background:color-mix(in srgb,var(--accent) 22%,transparent); color:var(--fg); }
+/* list view */
+#listview { position:fixed; top:60px; left:50%; transform:translateX(-50%); width:min(820px,calc(100vw - 32px)); bottom:70px; display:flex; flex-direction:column; padding:14px; border-radius:18px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(20px); z-index:3; }
+#listview[hidden], #newnote[hidden], #palette[hidden], #folderchip[hidden] { display:none; }
+.lvbar { display:flex; gap:6px; } .lvbar select { background:var(--glass); color:var(--fg); border:1px solid var(--line); border-radius:12px; padding:0 10px; font:inherit; }
+#lvchips { display:flex; flex-wrap:wrap; gap:4px; margin:10px 0; }
+.chip { font-size:11px; padding:3px 9px; border-radius:20px; } .chip.on { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 20%,transparent); }
+#lvitems { overflow:auto; flex:1; }
+.li { display:grid; grid-template-columns:14px 1fr auto; gap:10px; align-items:center; padding:8px 10px; border-radius:10px; cursor:pointer; }
+.li:hover { background:color-mix(in srgb,var(--accent) 12%,transparent); }
+.li i { width:10px; height:10px; border-radius:50%; background:var(--c); box-shadow:0 0 8px var(--c); }
+.li small { display:block; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:520px; }
+.li > span { color:var(--dim); font-size:11px; text-align:right; }
+/* legend filters */
+#legend button { padding:3px 8px; font-size:11px; color:var(--dim); } #legend button.off { opacity:.35; text-decoration:line-through; }
+#legend button i { margin:0 6px 0 0; } #legend [aria-pressed="true"] { border-color:var(--accent); color:var(--fg); }
+/* new note + palette + toast */
+#newnote { position:fixed; top:22%; left:50%; transform:translateX(-50%); width:min(560px,calc(100vw - 32px)); z-index:7; }
+#newnote input { padding:14px 16px; font-size:15px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+#palette { position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:8; }
+.pal { position:absolute; top:14%; left:50%; transform:translateX(-50%); width:min(600px,calc(100vw - 32px)); border-radius:16px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(24px); box-shadow:0 30px 80px rgba(0,0,0,.45); overflow:hidden; }
+.pal input { border:0; border-bottom:1px solid var(--line); border-radius:0; padding:14px 16px; font-size:15px; background:none; box-shadow:none; }
+#pallist { max-height:50vh; overflow:auto; }
+.pi { padding:8px 14px; cursor:pointer; display:flex; gap:10px; align-items:baseline; } .pi small { margin-left:auto; color:var(--dim); }
+.pi.on, .pi:hover { background:color-mix(in srgb,var(--accent) 20%,transparent); }
+.pg { font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); width:56px; flex:none; }
+.palfoot { padding:6px 14px; border-top:1px solid var(--line); }
+#toast { position:fixed; bottom:80px; left:50%; transform:translate(-50%,20px); padding:8px 16px; border-radius:20px; background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(14px); font-size:12px; opacity:0; transition:.25s; pointer-events:none; z-index:9; }
+#toast.on { opacity:1; transform:translate(-50%,0); }
+/* reader */
+#pactions { display:flex; flex-wrap:wrap; gap:4px; align-items:center; } #reader { margin-left:auto; display:flex; gap:2px; } #reader button { padding:4px 7px; font-size:11px; }
+#pin[aria-pressed="true"], #rfocus[aria-pressed="true"] { border-color:var(--accent); color:var(--accent); }
+#pbody { font-size:var(--read-size,15px); line-height:1.65; max-width:70ch; }
+html.serif #pbody { font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif; }
+html[data-wide="1"] #panel { width:min(60vw,calc(100vw - 32px)); } html[data-wide="2"] #panel { left:16px; width:auto; } html[data-wide="2"] #pbody { margin:0 auto; }
+html.focus-read:has(#panel:not([hidden])) #sky { opacity:.18; transition:opacity .4s; }
+#sky { transition:opacity .4s; }
+.toc { display:flex; flex-direction:column; gap:2px; margin:6px 0 10px; padding:8px 12px; border-left:2px solid var(--line); font-size:12px; } .toc b { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); }
+.toc a { color:var(--link); cursor:pointer; } .toc a:hover { color:var(--fg); }
+#pbody code { padding:1px 5px; border-radius:5px; background:color-mix(in srgb,var(--fg) 8%,transparent); } #pbody pre { padding:10px 12px; border-radius:10px; overflow:auto; background:color-mix(in srgb,var(--bg) 70%,transparent); border:1px solid var(--line); }
+#pbody pre code { background:none; padding:0; } #pbody blockquote { margin:8px 0; padding:4px 12px; border-left:3px solid var(--accent); color:var(--dim); }
+#pbody mark { background:color-mix(in srgb,var(--accent) 35%,transparent); color:inherit; border-radius:3px; } #pbody hr { border:0; border-top:1px solid var(--line); }
+#pbody li.task { list-style:none; margin-left:-16px; } #pbody li.done { color:var(--dim); text-decoration:line-through; }
+.tag { color:var(--accent); font-size:.92em; } .ext { color:var(--link); border-bottom:1px solid currentColor; }
+/* memory health */
+.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:6px 0; } .stats div { padding:8px; border-radius:10px; border:1px solid var(--line); text-align:center; font-size:11px; color:var(--dim); } .stats b { display:block; font-size:18px; color:var(--fg); }
+/* zen */
+html.zen #hud, html.zen #tools, html.zen #legend, html.zen #lapse, html.zen #minimap, html.zen #capture, html.zen #views { opacity:0; pointer-events:none; transition:opacity .4s; }
 @media (max-width:640px) { #minimap, #lapse, #legend { display:none; } #capture { width:calc(100vw - 32px); } #tools { top:auto; bottom:70px; } }
