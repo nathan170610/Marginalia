@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Orrery</title>
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div id="hud">
+  <div id="brand">ORRERY <span id="stats"></span></div>
+  <input id="q" placeholder="Search your mind…  ( / )" autocomplete="off" spellcheck="false" />
+  <div id="results"></div>
+</div>
+<div id="legend">
+  <i style="--c:#ffd479"></i>core <i style="--c:#7aa7ff"></i>planet <i style="--c:#6ff0e0"></i>moon <i style="--c:#8b93b8"></i>asteroid
+</div>
+<form id="capture"><input id="cap" placeholder="Capture a memory…  (adds to today's Inbox, links with [[Note]])" autocomplete="off" /></form>
+<aside id="panel" hidden>
+  <button id="close" aria-label="close">×</button>
+  <div id="ptitle"></div><div id="pmeta"></div><div id="pbody"></div><div id="plinks"></div>
+</aside>
+<script type="module" src="./main.ts"></script>
+</body>
+</html>
