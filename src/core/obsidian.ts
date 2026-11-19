@@ -20,7 +20,7 @@ export function importObsidian(src: string, dest: string, opts: { dryRun?: boole
       if (fs.existsSync(to)) {
         if (fs.readFileSync(to).equals(fs.readFileSync(from))) { r.unchanged++; continue; }
         if (!isNote) continue; // keep the existing attachment
-        to = to.replace(/\.md$/i, " (obsidian).md"); r.renamed.push(path.relative(dest, to));
+        to = to.replace(/\.md$/i, " (obsidian).md"); r.renamed.push(path.relative(dest, to).split(path.sep).join("/"));
         if (fs.existsSync(to)) { r.unchanged++; continue; }
       }
       if (!opts.dryRun) { fs.mkdirSync(path.dirname(to), { recursive: true }); fs.copyFileSync(from, to); }

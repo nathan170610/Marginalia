@@ -54,7 +54,7 @@ describe("import-claude", () => {
 
 describe("setup-claude", () => {
   it("picks the OS-specific config path", () => {
-    expect(claudeDesktopConfigPath("darwin", "/h")).toBe("/h/Library/Application Support/Claude/claude_desktop_config.json");
+    expect(claudeDesktopConfigPath("darwin", "/h")).toBe(path.join("/h", "Library", "Application Support", "Claude", "claude_desktop_config.json"));
     expect(claudeDesktopConfigPath("win32", "C:/h", { APPDATA: "C:/AppData" })).toContain(path.join("C:/AppData", "Claude"));
   });
   it("merges, keeps other servers, backs up, and does nothing without write", () => {
