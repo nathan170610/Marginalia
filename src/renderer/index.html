@@ -3,24 +3,67 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <title>Orrery</title>
 <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-<canvas id="sky"></canvas>
+<canvas id="sky" tabindex="0" aria-label="Your vault as a solar system. Arrow keys move between notes, Enter opens, plus and minus zoom."></canvas>
 <div id="hud">
   <div id="brand">ORRERY <span id="stats"></span></div>
   <input id="q" placeholder="Search your mind…  ( / )" autocomplete="off" spellcheck="false" />
   <div id="results"></div>
 </div>
-<div id="legend">
-  <i style="--c:#ffd479"></i>core <i style="--c:#7aa7ff"></i>planet <i style="--c:#6ff0e0"></i>moon <i style="--c:#8b93b8"></i>asteroid
+<div id="tools">
+  <button id="theme" title="Theme (T)">◐ <span id="themeName">deep space</span></button>
+  <button id="motion" title="Reduced motion (M)" aria-pressed="false">motion: on</button>
+  <button id="help" title="Keyboard shortcuts (?)">?</button>
+  <button id="gear" title="Settings">⚙</button>
 </div>
+<div id="legend">
+  <i data-tier="core"></i>core <i data-tier="planet"></i>planet <i data-tier="moon"></i>moon <i data-tier="asteroid"></i>asteroid
+</div>
+<div id="lapse">
+  <button id="play" title="Replay the vault growing">▶</button>
+  <input id="slider" type="range" min="0" max="1000" value="1000" aria-label="Time-lapse" />
+  <span id="when">now</span>
+</div>
+<canvas id="minimap" width="180" height="130" aria-label="Minimap"></canvas>
 <form id="capture"><input id="cap" placeholder="Capture a memory…  (adds to today's Inbox, links with [[Note]])" autocomplete="off" /></form>
 <aside id="panel" hidden>
   <button id="close" aria-label="close">×</button>
-  <div id="ptitle"></div><div id="pmeta"></div><div id="pbody"></div><div id="plinks"></div>
+  <div id="ptitle"></div><div id="pmeta"></div>
+  <div id="pactions"><button id="edit">Edit</button></div>
+  <div id="pbody"></div>
+  <div id="editor" hidden>
+    <textarea id="src" spellcheck="true"></textarea>
+    <div id="ac" hidden></div>
+    <div id="eactions"><button id="save">Save  <small>Ctrl+S</small></button><button id="cancel">Cancel</button><span id="estatus"></span></div>
+  </div>
+  <div id="plinks"></div>
 </aside>
+<aside id="settings" hidden>
+  <button class="x" id="sclose" aria-label="close">×</button>
+  <h3>Settings</h3>
+  <h4>Vault</h4>
+  <div id="svault" class="mono"></div>
+  <div class="row desk"><button id="schange">Change vault…</button><button id="sopen">Open folder</button></div>
+  <h4>Connect Claude Desktop</h4>
+  <p class="dim">Gives Claude the memory tools (brief, recall, explore, remember…). It reads only what it needs, so it stays cheap on tokens.</p>
+  <div class="row desk"><button id="sclaude">Connect automatically</button><span id="sclaudest" class="dim"></span></div>
+  <p class="dim web">From a terminal: <code>orrery setup-claude --yes</code>, or paste this into <span id="scfg" class="mono"></span>:</p>
+  <p class="dim desk">Or paste this into <span id="scfg2" class="mono"></span>:</p>
+  <pre id="ssnippet"></pre><button id="scopy">Copy</button>
+  <p class="dim desk" id="shot"></p>
+</aside>
+<div id="keys" hidden>
+  <b>Keys</b>
+  <div><kbd>/</kbd> search · <kbd>Esc</kbd> clear</div>
+  <div><kbd>←↑→↓</kbd> pan, or jump to the nearest note that way when one is open</div>
+  <div><kbd>Tab</kbd> next note · <kbd>Enter</kbd> open hovered</div>
+  <div><kbd>+</kbd>/<kbd>-</kbd> zoom · <kbd>0</kbd> reset view</div>
+  <div><kbd>T</kbd> theme · <kbd>M</kbd> motion · <kbd>L</kbd> replay growth</div>
+</div>
 <script type="module" src="./main.ts"></script>
 </body>
 </html>
