@@ -26,6 +26,7 @@ export function writeNote(root: string, id: string, body: string) {
   const raw = fs.readFileSync(f, "utf8");
   const m = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/.exec(raw);
   fs.writeFileSync(f, (m ? m[0] : "") + body);
+  return { id, saved: true };
 }
 export function linkNotes(root: string, a: string, b: string, reason = "") {
   const g = loadVault(root);

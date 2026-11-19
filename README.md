@@ -59,10 +59,15 @@ Plain `.md` files. Optional frontmatter: `summary:` (one-liner used in the brief
 Without `orbit:`, folders decide (`Core/` → core; `Values/ Projects/ People/ Goals/` → planet); everything else is placed by link count. `[[wikilinks]]` become edges.
 
 ## Controls
-`/` search · click a body to open it · hover to light its connections · scroll to zoom · drag to pan · capture box adds to today's Inbox.
+- **Mouse:** click a body to open it, hover to light up its connections, scroll to zoom, and drag to pan and tilt. Click or drag the minimap to jump.
+- **Keyboard:** `/` search, `Tab` next note, arrow keys go to the nearest note in that direction, `+`/`-` zoom, `0` reset, `?` shows all keys.
+- **Themes:** `T` cycles deep space, aurora and paper. `M` toggles reduced motion, which follows your OS setting by default.
+- **Time-lapse:** `L` or ▶ replays your vault growing. Notes edited in the last 3 days leave comet trails.
+- **Editing:** **Edit** in a note panel opens the editor. Typing `[[` suggests notes to link, and `Ctrl+S` saves to the markdown file.
+- **Capture:** the capture box adds to today's Inbox.
 
 ## Status & roadmap
-Phase 0-2 core is working (see [docs/BUILD_PROMPT.md](docs/BUILD_PROMPT.md) for the phased plan and ready-to-paste prompts). Not yet done: LLM-quality fact distillation (import is rule-based), in-app editing, packaged-installer testing, embeddings.
+Phases 0-3 are working (2,000 notes run at ≥50 fps) (see [docs/BUILD_PROMPT.md](docs/BUILD_PROMPT.md) for the phased plan and ready-to-paste prompts). Not yet done: LLM-quality fact distillation (import is rule-based), packaged-installer testing, embeddings.
 
 > This repo was previously a placeholder for an Android reading app ("Marginalia"); it now hosts Orrery.
 

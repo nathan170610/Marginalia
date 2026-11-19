@@ -5,7 +5,7 @@ export interface NoteData { id: string; title: string; orbit: string; tags: stri
 export interface Hit { id: string; title: string; orbit: string; score: number; snippet: string }
 
 declare global { interface Window { orrery?: {
-  graph(): Promise<GraphData>; note(id: string): Promise<NoteData>; search(q: string): Promise<Hit[]>; remember(t: string, o?: object): Promise<{ id: string }>;
+  graph(): Promise<GraphData>; note(id: string): Promise<NoteData>; search(q: string): Promise<Hit[]>; remember(t: string, o?: object): Promise<{ id: string }>; write(id: string, body: string): Promise<unknown>;
 } } }
 
 const j = async (u: string, init?: RequestInit) => { const r = await fetch(u, init); const d = await r.json(); if (!r.ok) throw new Error(d.error); return d; };
@@ -15,5 +15,6 @@ export const backend = window.orrery ?? {
   graph: (): Promise<GraphData> => j("/api/graph"),
   note: (id: string): Promise<NoteData> => j("/api/note?id=" + encodeURIComponent(id)),
   search: (q: string): Promise<Hit[]> => j("/api/search?q=" + encodeURIComponent(q)),
+  write: (id: string, body: string) => j("/api/write", { method: "POST", body: JSON.stringify({ id, body }) }),
   remember: (text: string, o: object = {}) => j("/api/remember", { method: "POST", body: JSON.stringify({ text, ...o }) }),
 };

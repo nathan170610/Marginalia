@@ -20,6 +20,7 @@ app.whenReady().then(() => {
   ipcMain.handle("graph", () => api.graph(vault));
   ipcMain.handle("note", (_e, id: string) => api.note(vault, id));
   ipcMain.handle("search", (_e, q: string) => api.search(vault, q));
+  ipcMain.handle("write", (_e, id: string, body: string) => api.write(vault, id, body));
   ipcMain.handle("remember", (_e, text: string, opts) => api.remember(vault, text, opts));
   createWindow();
   app.on("activate", () => BrowserWindow.getAllWindows().length === 0 && createWindow());
