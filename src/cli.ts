@@ -4,11 +4,15 @@ import { initVault } from "./core/capture";
 import { findTemplate, resolveVault } from "./core/config";
 import { estimateTokens } from "./core/brief";
 import { serve } from "./server";
+import { ingestClaude } from "./core/ingest";
+import { claudeDesktopConfigPath, setupClaude } from "./core/setup";
 
 const args = process.argv.slice(2);
 const flag = (n: string) => { const i = args.indexOf("--" + n); if (i < 0) return undefined; const v = args[i + 1]; args.splice(i, 2); return v; };
 const vault = resolveVault(flag("vault"));
 const budget = flag("budget");
+const bool = (n: string) => { const i = args.indexOf("--" + n); if (i < 0) return false; args.splice(i, 1); return true; };
+const dryRun = bool("dry-run"), yes = bool("yes"), all = bool("all");
 const port = Number(flag("port") || 4747);
 const cmd = args.shift();
 const rest = args.join(" ");
@@ -21,6 +25,9 @@ const help = `orrery — a living solar system of your mind
   orrery search <query>       ranked search over the vault
   orrery add <text>           capture a memory into today's Inbox note
   orrery mcp-config           print the Claude MCP config snippet
+  orrery setup-claude [--yes] add Orrery to Claude Desktop's config (shows the change; --yes writes it, with a backup)
+  orrery import-claude <export.zip|conversations.json|dir> [--dry-run] [--all]
+                              import a Claude data export as Conversation notes with durable facts
 
   --vault <dir>  or ORRERY_VAULT env var selects the vault`;
 
@@ -37,5 +44,20 @@ switch (cmd) {
   case "mcp-config":
     console.log(JSON.stringify({ mcpServers: { orrery: { command: "node", args: [path.resolve(__dirname, "mcp.cjs")], env: { ORRERY_VAULT: vault } } } }, null, 2));
     break;
+  case "setup-claude": {
+    const r = setupClaude(claudeDesktopConfigPath(), path.resolve(__dirname, "mcp.cjs"), vault, yes);
+    if (!r.changed) { console.log(`Already configured in ${r.file}`); break; }
+    console.log(JSON.stringify({ mcpServers: { orrery: r.config.mcpServers.orrery } }, null, 2));
+    if (!yes) console.log(`\nThis would ${r.replacing ? "replace the orrery entry" : "add an orrery entry"} in ${r.file}.\nRe-run with --yes to write it (other servers are kept; the old file is backed up).`);
+    else console.log(`\nWrote ${r.file}${r.backup ? ` (backup: ${r.backup})` : ""}. Restart Claude Desktop.`);
+    break;
+  }
+  case "import-claude": {
+    if (!rest) { console.log("usage: orrery import-claude <export.zip|conversations.json|dir> [--dry-run]"); break; }
+    const r = ingestClaude(vault, path.resolve(rest), { dryRun, all });
+    for (const p of r.created) console.log(`${dryRun ? "would create" : "created"} ${p.id}  (${p.facts.length} facts${p.links.length ? ", links: " + p.links.join(", ") : ""})${dryRun && p.facts.length ? "\n    - " + p.facts.join("\n    - ") : ""}`);
+    console.log(`\n${r.created.length} notes ${dryRun ? "proposed" : "written"}, ${r.skipped} conversations skipped (already imported or no durable facts), ${r.duplicateFacts} duplicate facts dropped.`);
+    break;
+  }
   default: console.log(help);
 }

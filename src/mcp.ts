@@ -26,4 +26,12 @@ server.tool("remember",
   { text: z.string().describe("one concise fact; no transcript dumps"), links: z.array(z.string()).optional().describe("note ids to link"), note: z.string().optional().describe("append to this existing note instead of the daily Inbox") },
   async ({ text: t, links, note }) => text(`saved to ${api.remember(vault, t, { links, note }).id}`));
 
+server.tool("update_note", "Replace the body of an existing note (frontmatter is kept). Read it first with read_note; keep edits minimal and never delete content the user wrote unless asked.",
+  { id: z.string(), body: z.string() },
+  async ({ id, body }) => { api.write(vault, id, body); return text(`updated ${id}`); });
+
+server.tool("link_notes", "Connect two existing notes (adds a 'related' line to the first). Use when you notice a real relationship.",
+  { from: z.string(), to: z.string(), reason: z.string().optional() },
+  async ({ from, to, reason }) => text(JSON.stringify(api.link(vault, from, to, reason))));
+
 server.connect(new StdioServerTransport());

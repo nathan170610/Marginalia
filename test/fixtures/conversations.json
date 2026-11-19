@@ -1,0 +1,13 @@
+[
+  {"uuid":"c-1","name":"Planning my Orrery app","created_at":"2026-10-02T10:00:00Z","chat_messages":[
+    {"sender":"human","text":"I'm building Orrery, a solar-system view of my notes. I prefer dark, glowing interfaces. Can you help me pick a canvas library?"},
+    {"sender":"assistant","text":"Sure, I am happy to help. I prefer Canvas 2D."},
+    {"sender":"human","content":[{"type":"text","text":"I decided to use plain Canvas 2D. My best friend Sam is helping with the design."}]}
+  ]},
+  {"uuid":"c-2","name":"Weekend","created_at":"2026-10-05T09:00:00Z","chat_messages":[
+    {"sender":"human","text":"I prefer dark, glowing interfaces. I live in Lyon and I work as a student."}
+  ]},
+  {"uuid":"c-3","name":"Quick code question","created_at":"2026-10-06T09:00:00Z","chat_messages":[
+    {"sender":"human","text":"How do I reverse a list in Python?"}
+  ]}
+]

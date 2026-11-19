@@ -27,8 +27,17 @@ export function writeNote(root: string, id: string, body: string) {
   const m = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/.exec(raw);
   fs.writeFileSync(f, (m ? m[0] : "") + body);
 }
+export function linkNotes(root: string, a: string, b: string, reason = "") {
+  const g = loadVault(root);
+  if (!g.notes.some(n => n.id === a)) throw new Error(`no such note: ${a}`);
+  if (!g.notes.some(n => n.id === b)) throw new Error(`no such note: ${b}`);
+  if (a === b) throw new Error("cannot link a note to itself");
+  if (g.notes.find(n => n.id === a)!.links.includes(b)) return { linked: false, reason: "already linked" };
+  fs.appendFileSync(safeNotePath(root, a), `\n- related: [[${b}]]${reason ? " — " + reason.replace(/\n/g, " ") : ""}\n`);
+  return { linked: true };
+}
 export const api = {
-  graph: graphPayload, note: readNote, write: writeNote, remember,
+  graph: graphPayload, note: readNote, write: writeNote, remember, link: linkNotes,
   search: (root: string, q: string, limit?: number) => search(loadVault(root), q, limit),
   brief: (root: string, budget?: number) => buildBrief(loadVault(root), { budget }),
 };
