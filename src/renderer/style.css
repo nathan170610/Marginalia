@@ -1,5 +1,7 @@
 :root { --bg:#03040a; --fg:#dfe6ff; --dim:#8b93b8; --glass:rgba(14,18,38,.62); --line:rgba(140,160,255,.18); --accent:#7aa7ff; --link:#9fc0ff; }
 html[data-theme="aurora"] { --bg:#020a0c; --fg:#dcfff4; --dim:#86b3a8; --glass:rgba(8,26,28,.62); --line:rgba(120,240,200,.18); --accent:#6fe8c0; --link:#8ff0d4; }
+html[data-theme="solar"] { --bg:#0b0603; --fg:#fff0dc; --dim:#c49a78; --glass:rgba(30,16,8,.64); --line:rgba(255,170,90,.2); --accent:#ffa94d; --link:#ffc27a; }
+html[data-theme="ink"] { --bg:#000; --fg:#fff; --dim:#a8b4d8; --glass:rgba(6,8,20,.8); --line:rgba(150,180,255,.32); --accent:#7fa6ff; --link:#a9c4ff; }
 html[data-theme="paper"] { --bg:#f3efe6; --fg:#2a2620; --dim:#7a7266; --glass:rgba(255,252,245,.82); --line:rgba(60,50,30,.18); --accent:#b0601e; --link:#9a4d10; }
 * { box-sizing: border-box; }
 html,body { margin:0; height:100%; background:var(--bg); color:var(--fg); font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; overflow:hidden; }

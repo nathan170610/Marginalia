@@ -1,4 +1,5 @@
 import { backend, GraphData, GNode, NoteData } from "./api";
+import { planetTexture, nebulaTexture, snapshot, clearTextures } from "./fx";
 
 const cv = document.getElementById("sky") as HTMLCanvasElement;
 const ctx = cv.getContext("2d", { alpha: false })!;
@@ -21,8 +22,14 @@ const THEMES: Record<string, Theme> = {
   paper: { name: "paper", bg: "#f3efe6", nebula: ["rgba(220,180,120,.22)", "rgba(200,190,170,.10)"], star: [120, 105, 80], stars: false,
     sun: ["rgba(255,236,190,1)", "rgba(240,170,80,.85)", "rgba(230,140,60,.22)", "rgba(230,140,60,0)"], label: [42, 38, 32], shadow: "rgba(243,239,230,.9)", additive: false,
     tier: { core: [200, 110, 30], planet: [60, 90, 160], moon: [30, 130, 120], asteroid: [130, 122, 110] }, planetHue: [0.5, 0.6], planetSL: [0.55, 0.38], edgeK: 1.6 },
+  solar: { name: "solar", bg: "#0b0603", nebula: ["rgba(200,110,30,.22)", "rgba(120,40,20,.12)"], star: [255, 225, 190], stars: true,
+    sun: ["rgba(255,250,225,1)", "rgba(255,190,80,.9)", "rgba(255,110,30,.3)", "rgba(255,90,20,0)"], label: [255, 236, 210], shadow: "rgba(0,0,0,.85)", additive: true,
+    tier: { core: [255, 196, 90], planet: [255, 150, 90], moon: [255, 210, 150], asteroid: [170, 140, 120] }, planetHue: [0.02, 0.12], planetSL: [0.85, 0.6], edgeK: 1 },
+  ink: { name: "midnight ink", bg: "#000000", nebula: ["rgba(60,90,255,.16)", "rgba(10,20,80,.10)"], star: [255, 255, 255], stars: true,
+    sun: ["rgba(255,255,255,1)", "rgba(200,220,255,.85)", "rgba(80,120,255,.25)", "rgba(60,90,255,0)"], label: [255, 255, 255], shadow: "rgba(0,0,0,1)", additive: true,
+    tier: { core: [255, 255, 255], planet: [110, 160, 255], moon: [200, 220, 255], asteroid: [150, 160, 190] }, planetHue: [0.58, 0.12], planetSL: [0.95, 0.7], edgeK: 1.3 },
 };
-const THEME_ORDER = ["space", "aurora", "paper"];
+const THEME_ORDER = ["space", "aurora", "solar", "ink", "paper"];
 const store = { get(k: string) { try { return localStorage.getItem(k); } catch { return null; } }, set(k: string, v: string) { try { localStorage.setItem(k, v); } catch { /* private mode */ } } };
 let themeKey = THEMES[store.get("orrery.theme") || ""] ? store.get("orrery.theme")! : "space";
 let th = THEMES[themeKey];
@@ -87,6 +94,7 @@ function layout(data: GraphData, first: boolean) {
   edges = data.edges.map(e => ({ s: byId.get(e.source)!, t: byId.get(e.target)! })).filter(e => e.s && e.t);
   adj = new Map(); for (const e of edges) { (adj.get(e.s.id) ?? adj.set(e.s.id, new Set()).get(e.s.id)!).add(e.t.id); (adj.get(e.t.id) ?? adj.set(e.t.id, new Set()).get(e.t.id)!).add(e.s.id); }
   glowSet = new Set(bodies.filter(b => b.orbit === "planet").sort((a, b) => b.deg - a.deg).slice(0, 60).map(b => b.id));
+  hubs = new Set(bodies.filter(b => b.orbit === "planet" && b.deg >= 3).sort((a, b) => b.deg - a.deg).slice(0, 4).map(b => b.id));
   // dense vaults: shrink everything but the best-connected planets so the picture stays legible
   if (bodies.length > 400) for (const b of bodies) if (b.orbit !== "core" && !glowSet.has(b.id)) b.size = Math.max(1.6, b.size * 0.5);
   pulses = edges.map((_, i) => ({ e: i, t: Math.random(), v: 0.12 + Math.random() * 0.18 }));
@@ -102,6 +110,17 @@ function sprite(c: RGB): HTMLCanvasElement {
   const rg = g.createRadialGradient(32, 32, 0, 32, 32, 32); rg.addColorStop(0, `rgba(${key},1)`); rg.addColorStop(0.35, `rgba(${key},.35)`); rg.addColorStop(1, `rgba(${key},0)`);
   g.fillStyle = rg; g.fillRect(0, 0, 64, 64); sprites.set(key, s); return s;
 }
+
+// ---------- textures (fx.ts): planet surfaces, rings, nebula ----------
+let fxOn = store.get("orrery.fx") !== "off"; let curTilt = BASE_TILT; let hubs = new Set<string>();
+const solids: { b: Body; r: number; al: number }[] = [];
+const nebCache = new Map<string, HTMLCanvasElement>();
+const nebula = () => nebCache.get(themeKey) ?? nebCache.set(themeKey, nebulaTexture(th.nebula[0], th.nebula[1], 0.2 + THEME_ORDER.indexOf(themeKey) * 0.13)).get(themeKey)!;
+function ringArc(b: Body, r: number, al: number, a0: number, a1: number) {
+  ctx.strokeStyle = rgba(lighten(b.col, 60), 0.55 * al); ctx.lineWidth = Math.max(1, r * 0.22);
+  ctx.beginPath(); ctx.ellipse(b.px, b.py, r * 2, r * 2 * curTilt * 0.42, -0.35, a0, a1); ctx.stroke();
+}
+let fade: { img: HTMLCanvasElement; t: number } | null = null; // theme cross-fade
 
 // ---------- background: three parallax star layers ----------
 const stars = Array.from({ length: 320 }, (_, i) => ({ x: hash("sx" + i), y: hash("sy" + i), z: 0.25 + hash("sz" + i) * 0.75, p: hash("sp" + i) * 6.28 }));
@@ -134,7 +153,7 @@ function frame(now: number) {
   const motion = reduced ? 0 : 1;
   speedMul += ((hover ? 0.12 : 1) - speedMul) * 0.08;
   if (!drag) tiltOff *= reduced ? 0 : 0.9;
-  const tilt = Math.max(0.45, Math.min(0.98, BASE_TILT + tiltOff));
+  const tilt = curTilt = Math.max(0.45, Math.min(0.98, BASE_TILT + tiltOff));
   if (playing && lapse !== null) { lapse += (tMax - tMin) / 10 * dt; if (lapse >= tMax) { lapse = null; playing = false; } syncLapseUI(); }
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.globalCompositeOperation = "source-over";
@@ -143,6 +162,8 @@ function frame(now: number) {
   const ng = ctx.createRadialGradient(cx, cy, 0, cx, cy, 760 * zoom);
   ng.addColorStop(0, th.nebula[0]); ng.addColorStop(.5, th.nebula[1]); ng.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = ng; ctx.fillRect(0, 0, W, H);
+  if (fxOn) { const neb = nebula(), ns = 1700 * (0.75 + zoom * 0.25), nx = W / 2 + panX * 0.4, ny = H / 2 + panY * 0.4;
+    ctx.globalAlpha = th.additive ? 0.85 : 0.5; ctx.drawImage(neb, nx - ns / 2 + 160, ny - ns / 2 - 60, ns, ns * 0.75); ctx.globalAlpha = 1; }
   if (th.stars) for (const s of stars) {
     const tw = motion ? 0.5 + 0.5 * Math.sin(now / 1000 * s.z * 2 + s.p) : 0.7;
     ctx.fillStyle = rgba(th.star, 0.12 + 0.5 * s.z * tw);
@@ -250,9 +271,11 @@ function frame(now: number) {
     const gr = r * (b.orbit === "asteroid" || dense ? 3 : 4.2) * flare;
     // dense vaults: glow only where it carries meaning (core, best-connected planets, focus, new notes); the rest are crisp dots
     if ((!dense || b.orbit === "core" || glowSet.has(b.id) || b === hover || b.id === selected || flare > 1 || al === 1 && (hover || selected || matches))) {
-      ctx.globalAlpha = (th.additive ? 0.55 : 0.35) * al; ctx.drawImage(sprite(b.col), b.px - gr, b.py - gr, gr * 2, gr * 2); ctx.globalAlpha = 1;
+      const halo = gr * (1 + Math.min(b.deg, 12) * 0.05); // atmosphere grows with how connected a note is
+      ctx.globalAlpha = (th.additive ? 0.55 : 0.35) * al; ctx.drawImage(sprite(b.col), b.px - halo, b.py - halo, halo * 2, halo * 2); ctx.globalAlpha = 1;
     }
-    if (dense) { // batch dots by colour + quantised alpha: a handful of fills instead of thousands
+    if (fxOn && !dense && r >= 3.2 && fps > 40) { solids.push({ b, r, al }); }
+    else if (dense) { // batch dots by colour + quantised alpha: a handful of fills instead of thousands
       const key = (b.dot ??= th.additive ? rgba(lighten(b.col, 70), "").slice(0, -1) : rgba(b.col, "").slice(0, -1)) + Math.round(al * 8) / 8 + ")";
       let path = batch.get(key); if (!path) batch.set(key, path = new Path2D());
       if (r < 2.6) path.rect(b.px - r, b.py - r, r * 2, r * 2); else { path.moveTo(b.px + r, b.py); path.arc(b.px, b.py, r, 0, 7); }
@@ -263,9 +286,24 @@ function frame(now: number) {
     if (b.id === selected) rings.push(b);
   }
   if (dense) { ctx.globalCompositeOperation = "source-over"; for (const [c, path] of batch) { ctx.fillStyle = c; ctx.fill(path); } if (th.additive) ctx.globalCompositeOperation = "lighter"; }
+  // textured, sun-lit spheres (normal blending so the night side really darkens)
+  if (solids.length) {
+    ctx.globalCompositeOperation = "source-over";
+    for (const { b, r, al } of solids) {
+      const sunA = Math.atan2(b.py - sy(0), b.px - sx(0)); // local -x faces the sun
+      const ringed = b.orbit === "planet" && hubs.has(b.id);
+      if (ringed) ringArc(b, r, al, Math.PI, Math.PI * 2);
+      ctx.save(); ctx.globalAlpha = al; ctx.translate(b.px, b.py); ctx.rotate(sunA);
+      ctx.drawImage(planetTexture(b.col, hash(b.id), b.orbit === "moon" || b.orbit === "asteroid" ? "rock" : "gas", th.additive), -r, -r, r * 2, r * 2);
+      ctx.restore();
+      if (ringed) ringArc(b, r, al, 0, Math.PI);
+    }
+    solids.length = 0;
+    if (th.additive) ctx.globalCompositeOperation = "lighter";
+  }
   for (const b of rings) {
-    const r = b.size * zoom * b.ps;
-    ctx.strokeStyle = th.additive ? "rgba(255,255,255,.9)" : "rgba(40,30,20,.8)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(b.px, b.py, r + 6, 0, 7); ctx.stroke();
+    const r = b.size * zoom * b.ps + 6 + (reduced ? 0 : Math.sin(now / 280) * 2);
+    ctx.strokeStyle = th.additive ? "rgba(255,255,255,.9)" : "rgba(40,30,20,.8)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(b.px, b.py, r, 0, 7); ctx.stroke();
   }
   // labels: level of detail + simple collision avoidance (focused labels always win)
   ctx.globalCompositeOperation = "source-over"; ctx.textAlign = "center";
@@ -283,6 +321,10 @@ function frame(now: number) {
     placed.push(box);
     ctx.fillStyle = rgba(th.label, Math.min(1, nodeAlpha(b) + (focus ? 0.3 : 0)) * 0.9);
     ctx.globalAlpha = 0.55; ctx.strokeText(b.title, x, y); ctx.globalAlpha = 1; ctx.fillText(b.title, x, y);
+  }
+  if (fade) { // previous theme dissolves over 300 ms
+    fade.t -= dt / 0.3; if (fade.t <= 0) fade = null;
+    else { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = fade.t; ctx.drawImage(fade.img, 0, 0); ctx.globalAlpha = 1; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   }
   if (frameN % (bodies.length > 400 ? 12 : 3) === 0) drawMinimap();
   requestAnimationFrame(frame);
@@ -376,7 +418,8 @@ function applyTheme() {
   for (const b of bodies) { b.col = colorFor(b); b.dot = undefined; }
   document.querySelectorAll<HTMLElement>("#legend i").forEach(i => i.style.setProperty("--c", rgba(th.tier[i.dataset.tier as Tier], 1)));
 }
-function cycleTheme() { themeKey = THEME_ORDER[(THEME_ORDER.indexOf(themeKey) + 1) % THEME_ORDER.length]; store.set("orrery.theme", themeKey); applyTheme(); }
+function setTheme(k: string) { if (!THEMES[k] || k === themeKey) return; if (!reduced && W) fade = { img: snapshot(cv), t: 1 }; themeKey = k; store.set("orrery.theme", k); clearTextures(); applyTheme(); }
+function cycleTheme() { setTheme(THEME_ORDER[(THEME_ORDER.indexOf(themeKey) + 1) % THEME_ORDER.length]); }
 function setReduced(v: boolean, save = true) { reduced = v; if (save) store.set("orrery.motion", v ? "reduced" : "full"); $("motion").textContent = v ? "motion: off" : "motion: on"; $("motion").setAttribute("aria-pressed", String(v)); }
 $("theme").onclick = cycleTheme; $("motion").onclick = () => setReduced(!reduced); $("help").onclick = () => { $("keys").hidden = !$("keys").hidden; };
 sysReduce.addEventListener("change", () => { if (!store.get("orrery.motion")) setReduced(sysReduce.matches, false); });
