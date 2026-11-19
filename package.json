@@ -1,0 +1,41 @@
+{
+  "name": "orrery",
+  "version": "0.1.0",
+  "description": "A living solar system of your mind: an Obsidian-compatible markdown vault with a beautiful orbit view and a token-efficient memory bridge for Claude (MCP).",
+  "license": "MIT",
+  "private": true,
+  "main": "dist/electron/main.cjs",
+  "bin": { "orrery": "dist/cli.cjs" },
+  "scripts": {
+    "build:node": "node scripts/build-node.mjs",
+    "build:ui": "vite build",
+    "build": "npm run build:node && npm run build:ui",
+    "dev": "npm run build:node && vite build --watch & node dist/cli.cjs serve",
+    "serve": "node dist/cli.cjs serve",
+    "app": "npm run build && electron .",
+    "dist": "npm run build && electron-builder",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "^45.4.1",
+    "electron-builder": "^26.0.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.6.0",
+    "vite": "^8.0.0",
+    "vitest": "^4.0.0"
+  },
+  "build": {
+    "appId": "dev.orrery.app",
+    "productName": "Orrery",
+    "files": ["dist/**/*", "template/**/*", "package.json"],
+    "win": { "target": "nsis" },
+    "mac": { "target": "dmg", "category": "public.app-category.productivity" },
+    "linux": { "target": ["AppImage", "deb"], "category": "Utility" }
+  }
+}
