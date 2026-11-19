@@ -1,6 +1,6 @@
 {
   "name": "orrery",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A living solar system of your mind: an Obsidian-compatible markdown vault with a beautiful orbit view and a token-efficient memory bridge for Claude (MCP).",
   "license": "MIT",
   "private": true,

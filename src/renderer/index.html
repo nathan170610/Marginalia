@@ -14,15 +14,23 @@
   <input id="q" placeholder="Search your mind…  ( / )" autocomplete="off" spellcheck="false" />
   <div id="results"></div>
 </div>
+<div id="views" role="group" aria-label="View"></div>
 <div id="tools">
+  <button id="palbtn" title="Command palette (Ctrl+K)">⌘ Ctrl+K</button>
   <button id="theme" title="Theme (T)">◐ <span id="themeName">deep space</span></button>
   <button id="motion" title="Reduced motion (M)" aria-pressed="false">motion: on</button>
   <button id="help" title="Keyboard shortcuts (?)">?</button>
   <button id="gear" title="Settings">⚙</button>
 </div>
 <div id="legend">
-  <i data-tier="core"></i>core <i data-tier="planet"></i>planet <i data-tier="moon"></i>moon <i data-tier="asteroid"></i>asteroid
+  <button data-tier="core" title="Show or hide"><i data-tier="core"></i>core</button><button data-tier="planet" title="Show or hide"><i data-tier="planet"></i>planet</button><button data-tier="moon" title="Show or hide"><i data-tier="moon"></i>moon</button><button data-tier="asteroid" title="Show or hide"><i data-tier="asteroid"></i>asteroid</button><button id="recent" aria-pressed="false" title="Highlight notes edited in the last 7 days">✧ last 7 days</button><button id="folderchip" hidden></button>
 </div>
+<div id="listview" hidden>
+  <div class="lvbar"><input id="lvq" placeholder="Filter notes…" autocomplete="off" spellcheck="false" /><select id="lvsort" aria-label="Sort"><option value="recent">Recent</option><option value="links">Most linked</option><option value="az">A–Z</option></select><button id="lvclose" title="Back to the sky">✕</button></div>
+  <div id="lvchips"></div>
+  <div id="lvitems"></div>
+</div>
+<form id="newnote" hidden><input id="nnq" placeholder="New note name…  (use / for folders, e.g. Projects/Idea)  ·  Enter to create, Esc to cancel" autocomplete="off" /></form>
 <div id="lapse">
   <button id="play" title="Replay the vault growing">▶</button>
   <input id="slider" type="range" min="0" max="1000" value="1000" aria-label="Time-lapse" />
@@ -33,7 +41,9 @@
 <aside id="panel" hidden>
   <button id="close" aria-label="close">×</button>
   <div id="ptitle"></div><div id="pmeta"></div>
-  <div id="pactions"><button id="edit">Edit</button></div>
+  <div id="pactions"><button id="edit">Edit</button><button id="pin" aria-pressed="false">☆ Pin</button>
+    <span id="reader"><button id="rsm" title="Smaller text">A−</button><button id="rlg" title="Bigger text">A+</button><button id="rfont">Serif</button><button id="rwide" title="Panel width (W)">Wide</button><button id="rfocus" aria-pressed="false" title="Dim the sky while reading">Focus</button></span></div>
+  <div id="ptoc"></div>
   <div id="pbody"></div>
   <div id="editor" hidden>
     <textarea id="src" spellcheck="true"></textarea>
@@ -45,6 +55,8 @@
 <aside id="settings" hidden>
   <button class="x" id="sclose" aria-label="close">×</button>
   <h3>Settings</h3>
+  <h4>Memory health</h4>
+  <div id="shealth" class="dim">Loading…</div>
   <h4>Vault</h4>
   <div id="svault" class="mono"></div>
   <div class="row desk"><button id="schange">Change vault…</button><button id="sopen">Open folder</button></div>
@@ -63,6 +75,12 @@
   <div><kbd>Tab</kbd> next note · <kbd>Enter</kbd> open hovered</div>
   <div><kbd>+</kbd>/<kbd>-</kbd> zoom · <kbd>0</kbd> reset view</div>
   <div><kbd>T</kbd> theme · <kbd>M</kbd> motion · <kbd>L</kbd> replay growth</div>
+  <div><kbd>Ctrl</kbd>+<kbd>K</kbd> command palette · <kbd>Ctrl</kbd>+<kbd>N</kbd> / <kbd>N</kbd> new note</div>
+  <div><kbd>V</kbd> next view (orbit, constellation, timeline, list)</div>
+  <div>Right-drag or <kbd>Shift</kbd>+drag: tilt and spin · double-click: reset</div>
+  <div><kbd>F</kbd> follow note · <kbd>D</kbd> depth of field · <kbd>X</kbd> textures</div>
+  <div><kbd>R</kbd> random note · <kbd>P</kbd> tour · <kbd>Z</kbd> zen · <kbd>W</kbd> panel width</div>
+  <div><kbd>[</kbd>/<kbd>]</kbd> or <kbd>Alt</kbd>+<kbd>←→</kbd> back / forward</div>
 </div>
 <script type="module" src="./main.ts"></script>
 </body>

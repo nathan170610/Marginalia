@@ -24,6 +24,12 @@ export function serve(root: string, uiDir: string, port: number): http.Server {
         const origin = req.headers.origin;
         if (origin && origin !== `http://${req.headers.host}`) return send(403, { error: "cross-origin write refused" });
       }
+      if (url.pathname === "/api/health") return send(200, api.health(root));
+      if (url.pathname === "/api/create" && req.method === "POST") {
+        let b = ""; for await (const c of req) b += c;
+        const j = JSON.parse(b);
+        return send(200, api.create(root, String(j.id || ""), String(j.body ?? "")));
+      }
       if (url.pathname === "/api/write" && req.method === "POST") {
         let b = ""; for await (const c of req) b += c;
         const j = JSON.parse(b);
